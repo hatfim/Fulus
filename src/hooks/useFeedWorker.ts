@@ -1,16 +1,20 @@
 /* eslint-disable no-console */
+import type { OhlcData } from 'lightweight-charts';
 import { useEffect, useRef, useState } from 'react';
 
 import type { IOrderBookState } from '~/types/feed.type';
+import { logger } from '~/utils';
 
 interface IUseFeedWorker {
   status: string;
   feed: Worker | null;
   orderBook: IOrderBookState | undefined;
+  candles: OhlcData[] | [];
 }
 export const useFeedWorker = (): IUseFeedWorker => {
   const [status, setStatus] = useState('loading');
   const [orderBook, setOrderBook] = useState<IOrderBookState>();
+  const [candles, setCandles] = useState<OhlcData[]>();
   const worker = useRef<Worker>();
 
   useEffect(() => {
@@ -26,14 +30,20 @@ export const useFeedWorker = (): IUseFeedWorker => {
             setOrderBook(Object.freeze(orderBookSnapshot));
             break;
           }
+          case 'CANDLE': {
+            const CandlesSnapshot = event.data.data;
+            setCandles(Object.freeze(CandlesSnapshot));
+            break;
+          }
           case 'FEED_KILLED':
-            console.log('frontend: feed killed');
+            logger.info('frontend: feed killed');
             break;
           default:
-            console.info('no data');
+            logger.info('no data');
         }
       };
       setStatus('ready');
+      logger.info('ready');
     })();
   }, []);
 
@@ -42,11 +52,13 @@ export const useFeedWorker = (): IUseFeedWorker => {
       status: 'ready',
       feed: worker.current,
       orderBook,
+      candles,
     };
   }
   return {
     status: 'loading',
     feed: null,
     orderBook,
+    candles,
   };
 };

@@ -1,17 +1,22 @@
-import type { OrderBook, OrderBookOrders } from '~/types/stream.type';
 import type {
   IOrderBookState,
   ITickerShape,
   TOrderDelta,
   TOrderRow,
 } from '~/types/feed.type';
+import type {
+  Candle,
+  OHLCVOptions,
+  OrderBook,
+  OrderBookOrders,
+} from '~/types/stream.type';
 import {
   afterDecimal,
   executeFetch,
   groupTickRows,
   jsonParse,
   logger,
-  sortOrderBook,
+  orderByTimestampAndCheckAscending,
 } from '~/utils';
 
 type Data = Array<Record<string, any>>;
@@ -38,11 +43,28 @@ class WebSocketStream {
     this.symbol = ticker.symbol;
     this.tickSize = ticker.tickSize;
 
+    if (this.isConnected) return;
+    let called = 1;
+    console.log((called += 1));
+
     this.connectAndSubscribe();
+    this.getOHLCV();
   }
 
   get isConnected() {
     return this.feed?.readyState === WebSocket.OPEN;
+  }
+
+  getOHLCV() {
+    return this.fetchOHLCV(
+      { symbol: this.symbol, interval: '5m' },
+      (candle) => {
+        postMessage({
+          type: 'CANDLE',
+          data: orderByTimestampAndCheckAscending(candle),
+        });
+      },
+    );
   }
 
   connectAndSubscribe = () => {
@@ -121,7 +143,7 @@ class WebSocketStream {
     };
 
     const fetchSnapshot = async () => {
-      const url = `https://api.binance.com/api/v3/depth?symbol=${symbol}&limit=1000`;
+      const url = `https://fapi.binance.com/fapi/v1/depth?symbol=${symbol}&limit=1000`;
       const data = await executeFetch(url, { method: 'get' });
 
       if (!this.isDisposed) {
@@ -148,7 +170,8 @@ class WebSocketStream {
           this.processOrderBookUpdate(orderBookState, update);
         });
 
-        sortOrderBook(orderBookState);
+        // sortOrderBook(orderBookState);
+        // calcOrderBookTotal(orderBookState);
         const newOrder = this.groupOrderBookRow({
           bids: orderBookState.bids,
           asks: orderBookState.asks,
@@ -191,6 +214,8 @@ class WebSocketStream {
 
           // snapshot is loaded, apply updates and callback
           this.processOrderBookUpdate(orderBookState, data);
+          // sortOrderBook(orderBookState);
+          // calcOrderBookTotal(orderBookState);
           const newOrder = this.groupOrderBookRow({
             bids: orderBookState.bids,
             asks: orderBookState.asks,
@@ -198,7 +223,6 @@ class WebSocketStream {
             tickSize,
             decimalPlace: afterDecimal(tickSize),
           });
-          sortOrderBook(orderBookState);
           Object.assign(orderBookSnapshot, newOrder);
 
           callback(orderBookSnapshot);
@@ -230,6 +254,37 @@ class WebSocketStream {
         this.feed?.send?.(JSON.stringify(payload));
       }
     };
+  };
+
+  // eslint-disable-next-line class-methods-use-this
+  fetchOHLCV = async (
+    opts: OHLCVOptions,
+    callback: (candle: Candle[]) => void,
+  ) => {
+    const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${opts.symbol}&interval=${opts.interval}&limit=500`;
+    const data = await executeFetch(url, { method: 'get' });
+
+    const candles: Candle[] = data.map(
+      ([time, open, high, low, close, volume]: [
+        number,
+        string,
+        string,
+        string,
+        string,
+        string,
+      ]) => {
+        return {
+          time: time / 1000,
+          open: parseFloat(open),
+          high: parseFloat(high),
+          low: parseFloat(low),
+          close: parseFloat(close),
+          volume: parseFloat(volume),
+        };
+      },
+    );
+
+    callback(candles);
   };
 
   // eslint-disable-next-line class-methods-use-this
@@ -297,8 +352,8 @@ class WebSocketStream {
   }) {
     const newMaxPriceSize = asks
       .concat(bids)
-      .filter((d) => d.price)
-      .map((d) => d.price)
+      .filter((d) => d.amount)
+      .map((d) => d.amount)
       .reduce((acc, curr) => acc + curr, 0);
 
     const orderBookSnapshot: IOrderBookState = {
@@ -320,8 +375,6 @@ class WebSocketStream {
 const feed = new WebSocketStream();
 
 onmessage = (event: MessageEvent) => {
-  logger.info(`FeedWebSocket onmessage: ${event}`);
-
   switch (event.data.type) {
     case 'KILL_FEED': {
       feed.dispose();

@@ -60,3 +60,12 @@ export interface IGranularOrderDelta {
   asks: TOrderDelta[];
   bids: TOrderDelta[];
 }
+
+export interface IOHLCVData {
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}

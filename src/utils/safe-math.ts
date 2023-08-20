@@ -45,8 +45,3 @@ export const divide = (a: number, b: number) => {
   const decimals = Math.max(aDecimals, bDecimals);
   return Math.round((a / b) * 10 ** decimals) / 10 ** decimals;
 };
-
-export const getDecimalPlaces = (value: number): number => {
-  if (Math.floor(value) === value) return 0;
-  return value.toString().split('.')[1].length || 0;
-};

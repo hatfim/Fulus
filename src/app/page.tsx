@@ -3,6 +3,8 @@
 import { ChevronDown, Growth } from '@carbon/icons-react';
 
 import { Icons } from '~/components/atoms/Icons';
+import { CandleStick } from '~/components/molecules/CandleStick';
+import { BuySell } from '~/components/organims/BuySell';
 import { OrderBook } from '~/components/organims/OrderBook';
 
 export default function Home() {
@@ -46,12 +48,15 @@ export default function Home() {
           </span>
         </div>
       </header>
-      <section className="grid min-h-screen gap-x-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="col-span-1">
+      <section className="grid grid-cols-5">
+        <div className="col-span-1 border-r">
           <OrderBook />
         </div>
-        <section className="col-span-3 border">
-          <p>Candle Stick</p>
+        <section id="chart-container" className="col-span-3">
+          <CandleStick />
+          <div className="p-4">
+            <BuySell />
+          </div>
         </section>
       </section>
     </main>

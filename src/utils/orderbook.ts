@@ -1,9 +1,5 @@
-/* eslint-disable no-param-reassign */
+import type { IOrderRowHash, TOrderRowUntotaled } from '~/types/feed.type';
 import type { OrderBook } from '~/types/stream.type';
-import type {
-  IOrderRowHash,
-  TOrderRowUntotaled,
-} from '~/types/feed.type';
 
 import { add, afterDecimal } from './safe-math';
 
@@ -15,6 +11,7 @@ export const sortOrderBook = (orderBook: OrderBook) => {
 export const calcOrderBookTotal = (orderBook: OrderBook) => {
   Object.values(orderBook).forEach((orders) => {
     orders.forEach((order, idx) => {
+      // eslint-disable-next-line no-param-reassign
       order.total =
         idx === 0 ? order.amount : add(order.amount, orders[idx - 1].total);
     });
@@ -49,7 +46,7 @@ export const groupTickRows = (
 ): IOrderRowHash => {
   const decimalPlace = afterDecimal(tickSize);
 
-  let total = 0;
+  let newtotal = 0;
 
   const grouping = Object.keys(orderDeltas)
     .map((key: string) => orderDeltas[parseFloat(key)])
@@ -59,7 +56,7 @@ export const groupTickRows = (
     .filter((k) => k)
     .map((delta) => {
       const { price, amount } = delta;
-      total += amount;
+      newtotal += amount;
       return {
         price: roundDownToTickDecimals(
           parseFloat(price),
@@ -67,7 +64,7 @@ export const groupTickRows = (
           decimalPlace,
         ).toFixed(decimalPlace),
         amount,
-        total,
+        total: newtotal.toFixed(4),
       };
     })
     .reduce((acc, curr) => {
