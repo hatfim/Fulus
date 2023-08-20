@@ -15,7 +15,7 @@ import { OrderTable } from './OrderTable';
 
 export function OrderBook() {
   const { status, feed, orderBook } = useFeedWorker();
-  const [tickSize, setTickSize] = useState('0.1');
+  const [tickSize] = useState('0.1');
 
   const tickSizeOptions = ['0.01', '0.1', '1', '10', '50'];
 
@@ -50,10 +50,10 @@ export function OrderBook() {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {tickSizeOptions.map((tickSize) => {
+                {tickSizeOptions.map((ticksize) => {
                   return (
-                    <SelectItem key={tickSize} value={tickSize}>
-                      {tickSize}
+                    <SelectItem key={ticksize} value={ticksize}>
+                      {ticksize}
                     </SelectItem>
                   );
                 })}

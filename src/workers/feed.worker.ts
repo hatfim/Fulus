@@ -44,8 +44,6 @@ class WebSocketStream {
     this.tickSize = ticker.tickSize;
 
     if (this.isConnected) return;
-    let called = 1;
-    console.log((called += 1));
 
     this.connectAndSubscribe();
     this.getOHLCV();

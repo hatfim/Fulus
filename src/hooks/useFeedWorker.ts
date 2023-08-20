@@ -9,7 +9,7 @@ interface IUseFeedWorker {
   status: string;
   feed: Worker | null;
   orderBook: IOrderBookState | undefined;
-  candles: OhlcData[] | [];
+  candles?: OhlcData[] | [];
 }
 export const useFeedWorker = (): IUseFeedWorker => {
   const [status, setStatus] = useState('loading');

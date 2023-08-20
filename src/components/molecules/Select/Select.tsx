@@ -23,6 +23,10 @@ const SelectTrigger = React.forwardRef<
       className,
     )}
     {...props}
+    onChange={(event) => {
+      return event;
+      // Handle the selected value here
+    }}
   >
     {children}
     <SelectPrimitive.Icon asChild>
