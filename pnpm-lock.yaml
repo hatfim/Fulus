@@ -64,6 +64,9 @@ devDependencies:
   '@testing-library/react':
     specifier: ^14.0.0
     version: 14.0.0(react-dom@18.2.0)(react@18.2.0)
+  '@types/carbon__icons-react':
+    specifier: ^11.20.0
+    version: 11.20.0
   '@types/jest':
     specifier: ^29.5.3
     version: 29.5.3
@@ -1823,6 +1826,10 @@ packages:
     resolution: {integrity: sha512-MitHFXnhtgwsGZWtT68URpOvLN4EREih1u3QtQiN4VdAxWKRVvGCSvw/Qth0M0Qq3pJpnGOu5JaM/ydK7OGbqg==}
     dependencies:
       '@babel/types': 7.22.10
+    dev: true
+
+  /@types/carbon__icons-react@11.20.0:
+    resolution: {integrity: sha512-tGRW9rtEjOdh2puC1ltQ5LYqeL/fjqkYAuvCLkxuEO/8sh0dVhHqbLySvCzlH62304/r6Cw8ugW3484p52PJhA==}
     dev: true
 
   /@types/graceful-fs@4.1.6:
